@@ -15,4 +15,4 @@ This is a simple implementation of a Merkle Tree data structure in Rust. Merkle 
 2. Clone this repository:
 
    ```bash
-   git clone (https://github.com/isoprophlex/rusty-merkle-tree/)
+   git clone https://github.com/isoprophlex/rusty-merkle-tree/
