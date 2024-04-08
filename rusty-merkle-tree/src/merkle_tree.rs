@@ -14,8 +14,9 @@ impl MerkleTree {
             return Err(error);
         }
         let mk = MerkleTree::hash_leaves(leaves_array);
-        Ok(Self { leaves: mk })
+        Ok( Self { leaves: mk })
     }
+    // Hash the members of the array
     fn hash_leaves(leaves_array: Vec<String>) -> Vec<String> {
         let mut sha3_hasher = Sha3::keccak256();
         let hash_vector : Vec<String> = leaves_array.iter().
@@ -26,6 +27,7 @@ impl MerkleTree {
             collect();
         hash_vector
     }
+    // Check the array provided
     fn verify_input(array: &Vec<String>) -> Result<(), ArrayError> {
         if array.is_empty() {
             return Err(ArrayError::Empty);
@@ -34,6 +36,9 @@ impl MerkleTree {
             return Err(ArrayError::NotPowerOfTwo);
         }
         Ok(())
+    }
+    fn get_root(&self) {
+        /* ... */
     }
 }
 
