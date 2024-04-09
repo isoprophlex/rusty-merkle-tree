@@ -8,14 +8,14 @@ pub enum ArrayError {
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct MerkleTree {
-    input: Vec<String>,
+    pub(crate) input: Vec<String>,
     leaves: Vec<String>,
 }
-const SMALL_ARRAY: usize = 1;
+const _SMALL_ARRAY: usize = 1;
 impl MerkleTree {
     //  This function creates the MerkleTree struct
     // verying the input array
-    fn new(leaves_array: Vec<String>) -> Result<MerkleTree, ArrayError> {
+    pub(crate) fn new(leaves_array: Vec<String>) -> Result<MerkleTree, ArrayError> {
         if let Err(error) = MerkleTree::verify_input(&leaves_array) {
             return Err(error);
         }
@@ -48,9 +48,10 @@ impl MerkleTree {
         }
         Ok(())
     }
-    fn calculate_merkle_root(&self) -> String {
+    pub(crate) fn calculate_merkle_root(&self) -> String {
+        // Return empty string if no roots
         if self.leaves.is_empty() {
-            return String::new(); // Devolver una cadena vacía si no hay hojas
+            return String::new();
         }
         let mut current_level: Vec<String> = self.leaves.clone();
         while current_level.len() > 1 {
@@ -72,11 +73,11 @@ impl MerkleTree {
     fn hash_nodes(&self, left: &str, right: &str) -> String {
         let mut hasher = Sha3::keccak256();
 
-        // Concatenar los hashes de los nodos hijos
+        // Input both nodes
         hasher.input(left.as_bytes());
         hasher.input(right.as_bytes());
 
-        // Calcular el hash combinado
+        // Get nodes
         let result = hasher.result_str();
 
         result
