@@ -16,9 +16,7 @@ impl MerkleTree {
     //  This function creates the MerkleTree struct
     // verying the input array
     pub(crate) fn new(leaves_array: Vec<String>) -> Result<MerkleTree, ArrayError> {
-        if let Err(error) = MerkleTree::verify_input(&leaves_array) {
-            return Err(error);
-        }
+        MerkleTree::verify_input(&leaves_array)?;
         Ok(Self {
             input: leaves_array.clone(),
             leaves: MerkleTree::hash_leaves(leaves_array),
