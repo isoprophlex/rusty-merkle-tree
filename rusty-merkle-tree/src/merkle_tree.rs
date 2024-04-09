@@ -46,3 +46,79 @@ impl MerkleTree {
 fn is_power_of_two(len: usize) -> bool {
     len > 0 && (len & (len - 1)) == 0
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    #[test]
+    fn empty_array() {
+        let mk = MerkleTree::build_from(vec![]);
+        assert_eq![tree, Err(CreationError::Empty)];
+    }
+    /*
+    #[test]
+    fn build_from_two_elements_is_ok() {
+        let tree = MerkleTree::build_from(vec!["foo".into(), "bar".into()]);
+        assert!(tree.is_ok());
+    }
+    #[test]
+    fn build_from_two_elements_root_is_ok() {
+        let tree = MerkleTree::build_from(vec!["foo".into(), "bar".into()]);
+        let mut hasher = Sha3::keccak256();
+        hasher.input("foo".to_string().as_bytes());
+        let hash1 = hasher.result_str();
+        let mut hasher = Sha3::keccak256();
+        hasher.input("bar".to_string().as_bytes());
+        let hash2 = hasher.result_str();
+        let mut hasher = Sha3::keccak256();
+        hasher.input((hash1 + hash2.as_str()).as_bytes());
+        let root = hasher.result_str();
+
+        assert_eq![tree.unwrap().get_root(), root];
+    }
+
+    #[test]
+    fn build_from_four_elements_root_is_ok() {
+        let tree = MerkleTree::build_from(vec!["foo".into(), "bar".into(), "hello".into(), "world!".into()]);
+
+        //manually get the hashes of all inputs
+        let mut hasher = Sha3::keccak256();
+        hasher.input("foo".to_string().as_bytes());
+        let hash1 = hasher.result_str();
+
+        let mut hasher = Sha3::keccak256();
+        hasher.input("bar".to_string().as_bytes());
+        let hash2 = hasher.result_str();
+
+        let mut hasher = Sha3::keccak256();
+        hasher.input("hello".to_string().as_bytes());
+        let hash3 = hasher.result_str();
+
+        let mut hasher = Sha3::keccak256();
+        hasher.input("world!".to_string().as_bytes());
+        let hash4 = hasher.result_str();
+
+        //manually get the hashes of the parents
+        let mut hasher = Sha3::keccak256();
+        hasher.input((hash1 + hash2.as_str()).as_bytes());
+        let root1 = hasher.result_str();
+
+        let mut hasher = Sha3::keccak256();
+        hasher.input((hash3 + hash4.as_str()).as_bytes());
+        let root2 = hasher.result_str();
+
+        //manually get the root
+        let mut hasher = Sha3::keccak256();
+        hasher.input((root1 + root2.as_str()).as_bytes());
+        let root = hasher.result_str();
+
+        println!("{root}");
+        assert!(tree.is_ok());
+
+        assert_eq![tree.unwrap().get_root(), root];
+
+    }
+
+     */
+}
