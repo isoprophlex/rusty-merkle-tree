@@ -16,3 +16,11 @@ This is a simple implementation of a Merkle Tree data structure in Rust. Merkle 
 
    ```bash
    git clone https://github.com/isoprophlex/rusty-merkle-tree/
+   
+3. Run:
+    ```bash
+   cargo run
+4. Test:
+    ```bash
+   cargo test
+   
