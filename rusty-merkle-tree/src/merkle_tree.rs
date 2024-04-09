@@ -1,20 +1,25 @@
 extern crate crypto;
 use::crypto::sha3::Sha3;
 use crypto::digest::Digest;
-use crate::array_error::ArrayError;
-
+#[derive(Debug, PartialEq)]
+pub enum ArrayError{
+    Empty,
+    NotPowerOfTwo
+}
+#[derive(Debug, PartialEq)]
 pub struct MerkleTree {
+    input:Vec<String>,
     leaves: Vec<String>
 }
 impl MerkleTree {
     //  This function creates the MerkleTree struct
     // verying the input array
-    fn new(&self ,leaves_array: Vec<String>) -> Result<MerkleTree, ArrayError> {
+    fn new(leaves_array: Vec<String>) -> Result<MerkleTree, ArrayError> {
         if let Err(error) = MerkleTree::verify_input(&leaves_array) {
             return Err(error);
         }
-        let mk = MerkleTree::hash_leaves(leaves_array);
-        Ok( Self { leaves: mk })
+        Ok( Self { input: leaves_array.clone(),
+            leaves: MerkleTree::hash_leaves(leaves_array.clone()) })
     }
     // Hash the members of the array
     fn hash_leaves(leaves_array: Vec<String>) -> Vec<String> {
@@ -49,12 +54,13 @@ fn is_power_of_two(len: usize) -> bool {
 
 #[cfg(test)]
 mod tests {
-
+    use crate::merkle_tree;
     use super::*;
     #[test]
     fn empty_array() {
-        let mk = MerkleTree::build_from(vec![]);
-        assert_eq![tree, Err(CreationError::Empty)];
+        let empty_vec = Vec::new();
+        let mk = MerkleTree::new(empty_vec);
+        assert_eq!(mk, Err(ArrayError::Empty));
     }
     /*
     #[test]
