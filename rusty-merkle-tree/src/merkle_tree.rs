@@ -4,7 +4,6 @@ use crypto::digest::Digest;
 #[derive(Debug, PartialEq, Clone)]
 pub enum ArrayError {
     Empty,
-    NotPowerOfTwo,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct MerkleTree {
@@ -24,25 +23,27 @@ impl MerkleTree {
     }
     // Hash the members of the array
     fn hash_leaves(leaves_array: Vec<String>) -> Vec<String> {
-        let mut sha3_hasher = Sha3::keccak256();
-        let hash_vector: Vec<String> = leaves_array
+        let mut hashes: Vec<String> = leaves_array
             .iter()
-            .map(|elem| {
-                sha3_hasher.input(elem.as_ref());
-                let str = sha3_hasher.result_str().to_string();
-                sha3_hasher.reset();
-                str
+            .map(|e| {
+                let mut sha3 = Sha3::keccak256();
+                sha3.input(e.as_bytes());
+                sha3.result_str().to_string()
             })
             .collect();
-        hash_vector
+
+        let mut len = hashes.len();
+        while (len & (len - 1)) != 0 {
+            hashes.push(hashes.last().unwrap().clone());
+            len = hashes.len();
+        }
+
+        hashes
     }
     // Check the array provided
     fn verify_input(array: &Vec<String>) -> Result<(), ArrayError> {
         if array.is_empty() {
             return Err(ArrayError::Empty);
-        }
-        if !is_power_of_two(array.len()) {
-            return Err(ArrayError::NotPowerOfTwo);
         }
         Ok(())
     }
@@ -82,13 +83,10 @@ impl MerkleTree {
     }
 }
 
-fn is_power_of_two(len: usize) -> bool {
-    len > 0 && (len & (len - 1)) == 0
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crypto::sha3::Sha3Mode::Sha3_256;
 
     #[test]
     fn empty_array() {
@@ -97,13 +95,13 @@ mod tests {
         assert_eq!(mk, Err(ArrayError::Empty));
     }
     #[test]
-    fn array_with_three_elements_fails() {
+    fn array_with_three_elements() {
         let mut three_elements_vec = Vec::new();
         three_elements_vec.push("franco".to_string());
         three_elements_vec.push("cuppari".to_string());
         three_elements_vec.push("lambda".to_string());
-        let mk = MerkleTree::new(three_elements_vec);
-        assert_eq!(mk, Err(ArrayError::NotPowerOfTwo));
+        let mk = MerkleTree::new(three_elements_vec.clone());
+        assert_eq!(mk.unwrap().input, three_elements_vec)
     }
     #[test]
     fn calculate_root_for_a_single_node() {
@@ -158,5 +156,65 @@ mod tests {
 
         // Check if results are equal
         assert_eq!(merkle_root_calculated, hash_root);
+    }
+    #[test]
+    fn ten_elements_array_turns_to_sixteen() {
+        let mk = MerkleTree::new(vec![
+            "f".into(),
+            "r".into(),
+            "o".into(),
+            "m".into(),
+            "t".into(),
+            "e".into(),
+            "n".into(),
+            "t".into(),
+            "o".into(),
+            "s".into(),
+        ]);
+
+        assert!(mk.is_ok());
+        assert_eq!(mk.unwrap().leaves.len(), 16);
+    }
+    #[test]
+    fn root_for_three_elements() {
+        let input = vec![
+            "hash1".to_string(),
+            "hash2".to_string(),
+            "hash3".to_string(),
+        ];
+        let mut mk = MerkleTree::new(input.clone());
+        let mut sha3_1 = Sha3::keccak256();
+        let mut sha3_2 = Sha3::keccak256();
+        let mut sha3_3 = Sha3::keccak256();
+        sha3_1.input(&input[0].as_bytes());
+        sha3_2.input(&input[1].as_bytes());
+        sha3_3.input(&input[2].as_bytes());
+        let leaves_hashes = vec![
+            sha3_1.result_str(),
+            sha3_2.result_str(),
+            sha3_3.result_str(),
+        ];
+
+        let mut sha_parent_1 = Sha3::keccak256();
+        let mut sha_parent_2 = Sha3::keccak256();
+
+        //  parent one
+        sha_parent_1.input(&leaves_hashes[0].as_bytes());
+        sha_parent_1.input(&leaves_hashes[1].as_bytes());
+
+        //  parent two
+        sha_parent_2.input(&leaves_hashes[2].as_bytes());
+        sha_parent_2.input(&leaves_hashes[2].as_bytes());
+
+        let parents_hashes = vec![sha_parent_1.result_str(), sha_parent_2.result_str()];
+
+        let mut sha_root = Sha3::keccak256();
+        sha_root.input(&parents_hashes[0].as_bytes());
+        sha_root.input(&parents_hashes[1].as_bytes());
+
+        let root = sha_root.result_str();
+
+        assert!(mk.is_ok());
+        assert_eq!(mk.unwrap().calculate_merkle_root(), root);
     }
 }
