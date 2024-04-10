@@ -86,7 +86,6 @@ impl MerkleTree {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crypto::sha3::Sha3Mode::Sha3_256;
 
     #[test]
     fn empty_array() {
@@ -182,7 +181,7 @@ mod tests {
             "hash2".to_string(),
             "hash3".to_string(),
         ];
-        let mut mk = MerkleTree::new(input.clone());
+        let mk = MerkleTree::new(input.clone());
         let mut sha3_1 = Sha3::keccak256();
         let mut sha3_2 = Sha3::keccak256();
         let mut sha3_3 = Sha3::keccak256();
