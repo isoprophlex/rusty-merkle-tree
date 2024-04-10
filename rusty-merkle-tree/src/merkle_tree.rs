@@ -1,6 +1,7 @@
 extern crate crypto;
 use ::crypto::sha3::Sha3;
 use crypto::digest::Digest;
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum InputError {
     Empty,
@@ -15,6 +16,7 @@ const _SMALL_ARRAY: usize = 1;
 impl MerkleTree {
     //  This function creates the MerkleTree struct
     // verying the input array
+    #[allow(unused)]
     pub(crate) fn new(leaves_array: Vec<String>) -> Result<MerkleTree, InputError> {
         MerkleTree::verify_input(&leaves_array)?;
         Ok(Self {
@@ -23,6 +25,7 @@ impl MerkleTree {
         })
     }
     // Hash the members of the array
+    #[allow(unused)]
     fn hash_leaves(leaves_array: Vec<String>) -> Vec<String> {
         let mut hashes: Vec<String> = leaves_array
             .iter()
@@ -42,12 +45,14 @@ impl MerkleTree {
         hashes
     }
     // Check the array provided
+    #[allow(unused)]
     fn verify_input(array: &Vec<String>) -> Result<(), InputError> {
         if array.is_empty() {
             return Err(InputError::Empty);
         }
         Ok(())
     }
+    #[allow(unused)]
     pub(crate) fn calculate_merkle_root(&self) -> String {
         // Return empty string if no roots
         if self.leaves.is_empty() {
@@ -121,7 +126,8 @@ impl MerkleTree {
         Err(InputError::LeafNotFound)
     }
 }
-fn verify_proof(mut proof: Vec<String>, root: &str, index: usize) -> bool {
+#[allow(unused)]
+pub fn verify_proof(mut proof: Vec<String>, root: &str, index: usize) -> bool {
     let mut element = proof.remove(0);
     let mut current_index = index;
 
