@@ -1,4 +1,4 @@
- Merkle Tree Implementation in Rust
+# Merkle Tree Implementation in Rust
 
 This is a simple implementation of a Merkle Tree data structure in Rust. Merkle Trees are hash trees that are widely used in blockchain and distributed systems for efficient and secure verification of large datasets.
 
