@@ -81,6 +81,34 @@ impl MerkleTree {
 
         result
     }
+    fn leaf_exists(&self, leaf: String) {
+        //
+    }
+    fn proof(&self, index: usize, new_leaves: &[String],mut proof: Vec<String>) -> Vec<String> {
+        if new_leaves.len() == _SMALL_ARRAY {
+            return proof;
+        }
+        let mut parents = vec![];
+        // Get the hash for the upper nodes
+        for chunk in new_leaves.chunks_exact(2) {
+            let mut sha3 = Sha3::keccak256();
+            sha3.input(&chunk[0].as_ref());
+            sha3.input(&chunk[1].as_ref());
+            parents.push(sha3.result_str());
+        }
+        //  If index % 2 == 0 I'm the left child
+        // So, my sibling is on my right (+1)
+        let sibling_index = if index % 2 == 0 {
+            index - 1;
+            //  If index % 2 != 0 I'm the right child
+            // So, my sibling is on my left (-1)
+        } else {
+            index + 1;
+        };
+        //  Add the node I need to my proof vector
+        proof.push(new_leaves[sibling_index].clone());
+        self.proof(index/2, &parents, proof)
+    }
 }
 
 #[cfg(test)]
@@ -215,5 +243,8 @@ mod tests {
 
         assert!(mk.is_ok());
         assert_eq!(mk.unwrap().calculate_merkle_root(), root);
+    }
+    fn proof_works() {
+
     }
 }
