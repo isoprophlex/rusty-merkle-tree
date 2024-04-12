@@ -1,10 +1,16 @@
-extern crate crypto;
 pub mod merkle_tree;
 fn main() {
-    let leaves = vec!["franco".to_string()];
-    let mk = merkle_tree::MerkleTree::new(leaves);
-    println!(
-        "root for the vec given: {:?}",
-        mk.unwrap().calculate_merkle_root()
-    );
+    let leafs = vec!["franco".to_string()];
+
+    match merkle_tree::MerkleTree::new(leafs) {
+        Ok(tree) => {
+            let root = tree.calculate_merkle_root();
+            println!("root for the vec given: {:?}", root);
+        }
+        Err(err) => {
+            eprintln!("Error: Failed to create Merkle tree: {:?}", err);
+        }
+    }
 }
+
+

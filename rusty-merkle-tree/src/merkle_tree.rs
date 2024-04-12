@@ -1,4 +1,4 @@
-extern crate crypto;
+use crypto::*;
 use ::crypto::sha3::Sha3;
 use crypto::digest::Digest;
 
