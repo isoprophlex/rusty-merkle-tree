@@ -33,12 +33,12 @@ This is a simple implementation of a Merkle Tree data structure in Rust. Merkle 
       ```
       
    c. Tests
-      ````sh
+      ```sh
       make test 
       ```
       
    d. Format & clippy
-     ```sh
+      ```sh
       make format 
       ```
    
