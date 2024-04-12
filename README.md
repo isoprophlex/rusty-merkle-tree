@@ -24,7 +24,7 @@ This is a simple implementation of a Merkle Tree data structure in Rust. Merkle 
 4. Commands:
    
    a. Build
-   ```bash
+      ```bash
       make build
    
    b. Run
