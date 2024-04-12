@@ -20,16 +20,21 @@ This is a simple implementation of a Merkle Tree data structure in Rust. Merkle 
 3. Move to the right directory
     ```bash
    cd rusty-merkle-tree
+    
 4. Commands:
+   
    a. Build
       ´´´bash
       make build
+   
    b. Run
       ```bash
       make run
+      
    c. Tests
       ```bash
       make test
+      
    d. Format & clippy
       ```bash
       make format
