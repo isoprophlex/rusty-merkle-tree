@@ -24,26 +24,21 @@ This is a simple implementation of a Merkle Tree data structure in Rust. Merkle 
 4. Commands:
    
    a. Build
-      ```bash
-      make build
-   
+      ```sh
+      make build 
+      ```
    b. Run
-      ```bash
-      make run
+      ```sh
+      make run 
+      ```
       
    c. Tests
-      ```bash
-      make test
+      ````sh
+      make test 
+      ```
       
    d. Format & clippy
-      ```bash
-      make format
-
-   
-3. Run:
-    ```bash
-   cargo run
-4. Test:
-    ```bash
-   cargo test
+     ```sh
+      make format 
+      ```
    
