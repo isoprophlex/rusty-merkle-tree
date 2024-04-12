@@ -125,19 +125,6 @@ impl MerkleTree {
         }
         Err(InputError::LeafNotFound)
     }
-    #[allow(unused)]
-    fn hash_chunks(chunk1: String, chunk2: String) -> String {
-        let mut sha3 = Sha3::keccak256();
-        sha3.input(chunk1.as_bytes());
-        sha3.input(chunk2.as_bytes());
-        sha3.result_str().to_string()
-    }
-    #[allow(unused)]
-    fn hash_string(input: String) -> String {
-        let mut sha3 = Sha3::keccak256();
-        sha3.input(input.as_bytes());
-        sha3.result_str().to_string()
-    }
 }
 #[allow(unused)]
 pub fn verify_proof(mut proof: Vec<String>, root: &str, index: usize) -> bool {
@@ -186,8 +173,11 @@ mod tests {
         let mut vec = Vec::new();
         vec.push("franco".to_string());
         let mk = MerkleTree::new(vec);
-        let sha_3_hash = MerkleTree::hash_string("franco".to_string());
-        assert_eq!(sha_3_hash, mk.unwrap().calculate_merkle_root())
+        let mut sha_3_hasher = Sha3::keccak256();
+        sha_3_hasher.input("franco".to_string().as_ref());
+        let manual_hash_root = sha_3_hasher.result_str();
+        //  Manual hash equals the one that the struct returns
+        assert_eq!(manual_hash_root, mk.unwrap().calculate_merkle_root())
     }
     #[test]
     fn root_for_four_element_vec() {
@@ -201,19 +191,33 @@ mod tests {
         let merkle_root_calculated = mk.unwrap().calculate_merkle_root();
         let vec2 = vec!["hash1", "hash2", "hash3", "hash4"];
         let mut vec_leafs = Vec::new();
-        let hash1 = MerkleTree::hash_string(vec2[0].to_string());
-        vec_leafs.push(hash1);
-        let hash2 = MerkleTree::hash_string(vec2[1].to_string());
-        vec_leafs.push(hash2);
-        let hash3 = MerkleTree::hash_string(vec2[2].to_string());
-        vec_leafs.push(hash3);
-        let hash4 = MerkleTree::hash_string(vec2[3].to_string());
-        vec_leafs.push(hash4);
+        let mut hasher1 = Sha3::keccak256();
+        hasher1.input(vec2[0].as_bytes());
+        vec_leafs.push(hasher1.result_str());
+        let mut hasher2 = Sha3::keccak256();
+        hasher2.input(vec2[1].as_bytes());
+        vec_leafs.push(hasher2.result_str());
+        let mut hasher3 = Sha3::keccak256();
+        hasher3.input(vec2[2].as_bytes());
+        vec_leafs.push(hasher3.result_str());
+        let mut hasher4 = Sha3::keccak256();
+        hasher4.input(vec2[3].as_bytes());
+        vec_leafs.push(hasher4.result_str());
 
-        let hash_parent_1 = MerkleTree::hash_chunks(vec_leafs[0].clone(), vec_leafs[1].clone());
-        let hash_parent_2 = MerkleTree::hash_chunks(vec_leafs[2].clone(), vec_leafs[3].clone());
+        let mut hasher_parent_1 = Sha3::keccak256();
+        hasher_parent_1.input(vec_leafs[0].as_bytes());
+        hasher_parent_1.input(vec_leafs[1].as_bytes());
+        let hash_p1 = hasher_parent_1.result_str();
 
-        let hash_root = MerkleTree::hash_chunks(hash_parent_1, hash_parent_2);
+        let mut hasher_parent_2 = Sha3::keccak256();
+        hasher_parent_2.input(vec_leafs[2].as_bytes());
+        hasher_parent_2.input(vec_leafs[3].as_bytes());
+        let hash_p2 = hasher_parent_2.result_str();
+
+        let mut hasher_root = Sha3::keccak256();
+        hasher_root.input(hash_p1.as_bytes());
+        hasher_root.input(hash_p2.as_bytes());
+        let hash_root = hasher_root.result_str();
 
         // Check if results are equal
         assert_eq!(merkle_root_calculated, hash_root);
@@ -244,14 +248,36 @@ mod tests {
             "hash3".to_string(),
         ];
         let mk = MerkleTree::new(input.clone());
-        let hash1 = MerkleTree::hash_string(input[0].to_string());
-        let hash2 = MerkleTree::hash_string(input[1].to_string());
-        let hash3 = MerkleTree::hash_string(input[2].to_string());
-        let leaves_hashes = vec![hash1, hash2, hash3];
-        let parent1 = MerkleTree::hash_chunks(leaves_hashes[0].clone(), leaves_hashes[1].clone());
-        let parent2 = MerkleTree::hash_chunks(leaves_hashes[2].clone(), leaves_hashes[2].clone());
+        let mut sha3_1 = Sha3::keccak256();
+        let mut sha3_2 = Sha3::keccak256();
+        let mut sha3_3 = Sha3::keccak256();
+        sha3_1.input(&input[0].as_bytes());
+        sha3_2.input(&input[1].as_bytes());
+        sha3_3.input(&input[2].as_bytes());
+        let leaves_hashes = vec![
+            sha3_1.result_str(),
+            sha3_2.result_str(),
+            sha3_3.result_str(),
+        ];
 
-        let root = MerkleTree::hash_chunks(parent1, parent2);
+        let mut sha_parent_1 = Sha3::keccak256();
+        let mut sha_parent_2 = Sha3::keccak256();
+
+        //  parent one
+        sha_parent_1.input(&leaves_hashes[0].as_bytes());
+        sha_parent_1.input(&leaves_hashes[1].as_bytes());
+
+        //  parent two
+        sha_parent_2.input(&leaves_hashes[2].as_bytes());
+        sha_parent_2.input(&leaves_hashes[2].as_bytes());
+
+        let parents_hashes = vec![sha_parent_1.result_str(), sha_parent_2.result_str()];
+
+        let mut sha_root = Sha3::keccak256();
+        sha_root.input(&parents_hashes[0].as_bytes());
+        sha_root.input(&parents_hashes[1].as_bytes());
+
+        let root = sha_root.result_str();
 
         assert!(mk.is_ok());
         assert_eq!(mk.unwrap().calculate_merkle_root(), root);
@@ -279,15 +305,31 @@ mod tests {
         let mk = MerkleTree::new(input.clone());
         assert!(mk.clone().is_ok());
         // let mut apparent_proof = vec![];
-        let hash1 = MerkleTree::hash_string(String::from("hash1"));
-        let hash2 = MerkleTree::hash_string(String::from("hash2"));
-        let parent_left_hash = MerkleTree::hash_chunks(hash1, hash2);
+        let mut hasher1 = Sha3::keccak256();
+        hasher1.input(String::from("hash1").as_ref());
+        let mut hasher2 = Sha3::keccak256();
+        hasher2.input(String::from("hash2").as_ref());
 
-        let hash3 = MerkleTree::hash_string(String::from("hash3"));
-        let hash4 = MerkleTree::hash_string(String::from("hash4"));
-        let parent_right_hash = MerkleTree::hash_chunks(hash3, hash4);
+        let mut parent_left_hasher = Sha3::keccak256();
+        parent_left_hasher.input(hasher1.result_str().as_ref());
+        parent_left_hasher.input(hasher2.result_str().as_ref());
+        let parent_left = parent_left_hasher.result_str();
 
-        let root = MerkleTree::hash_chunks(parent_left_hash, parent_right_hash);
+        let mut hasher3 = Sha3::keccak256();
+        hasher3.input(String::from("hash3").as_ref());
+        let mut hasher4 = Sha3::keccak256();
+        hasher4.input(String::from("hash4").as_ref());
+
+        let mut parent_right_hasher = Sha3::keccak256();
+        parent_right_hasher.input(hasher3.result_str().as_ref());
+        let hash4 = hasher4.result_str();
+        parent_right_hasher.input(hash4.as_ref());
+        let parent_right = parent_right_hasher.result_str();
+
+        let mut hasher_root = Sha3::keccak256();
+        hasher_root.input(parent_left.as_ref());
+        hasher_root.input(parent_right.as_ref());
+        let root = hasher_root.result_str();
         //  Check if I got root right
         assert_eq!(mk.clone().unwrap().calculate_merkle_root(), root);
         let proof = mk.unwrap().leaf_exists(String::from("hash3"));
