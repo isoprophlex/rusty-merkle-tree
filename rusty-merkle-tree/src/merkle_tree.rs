@@ -1,13 +1,12 @@
-use crypto::*;
 use ::crypto::sha3::Sha3;
 use crypto::digest::Digest;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum InputError {
     Empty,
     LeafNotFound,
 }
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MerkleTree {
     pub(crate) input: Vec<String>,
     leaves: Vec<String>,
@@ -16,23 +15,21 @@ const _SMALL_ARRAY: usize = 1;
 impl MerkleTree {
     //  This function creates the MerkleTree struct
     // verying the input array
-    #[allow(unused)]
     pub(crate) fn new(leaves_array: Vec<String>) -> Result<MerkleTree, InputError> {
         MerkleTree::verify_input(&leaves_array)?;
         Ok(Self {
             input: leaves_array.clone(),
-            leaves: MerkleTree::hash_leaves(leaves_array),
+            leaves: MerkleTree::hash_leafs(leaves_array),
         })
     }
     // Hash the members of the array
-    #[allow(unused)]
-    fn hash_leaves(leaves_array: Vec<String>) -> Vec<String> {
+    fn hash_leafs(leaves_array: Vec<String>) -> Vec<String> {
         let mut hashes: Vec<String> = leaves_array
             .iter()
             .map(|e| {
                 let mut sha3 = Sha3::keccak256();
                 sha3.input(e.as_bytes());
-                sha3.result_str().to_string()
+                sha3.result_str()
             })
             .collect();
 
@@ -45,14 +42,12 @@ impl MerkleTree {
         hashes
     }
     // Check the array provided
-    #[allow(unused)]
-    fn verify_input(array: &Vec<String>) -> Result<(), InputError> {
+    const fn verify_input(array: &[String]) -> Result<(), InputError> {
         if array.is_empty() {
             return Err(InputError::Empty);
         }
         Ok(())
     }
-    #[allow(unused)]
     pub(crate) fn calculate_merkle_root(&self) -> String {
         // Return empty string if no roots
         if self.leaves.is_empty() {
@@ -83,11 +78,9 @@ impl MerkleTree {
         hasher.input(right.as_bytes());
 
         // Get nodes
-        let result = hasher.result_str();
-
-        result
+        hasher.result_str()
     }
-    fn proof(&self, index: usize, new_leaves: &[String], mut proof: Vec<String>) -> Vec<String> {
+    fn proof(index: usize, new_leaves: &[String], mut proof: Vec<String>) -> Vec<String> {
         if new_leaves.len() == _SMALL_ARRAY {
             return proof;
         }
@@ -95,8 +88,8 @@ impl MerkleTree {
         // Get the hash for the upper nodes
         for chunk in new_leaves.chunks_exact(2) {
             let mut sha3 = Sha3::keccak256();
-            sha3.input(&chunk[0].as_ref());
-            sha3.input(&chunk[1].as_ref());
+            sha3.input(chunk[0].as_ref());
+            sha3.input(chunk[1].as_ref());
             parents.push(sha3.result_str());
         }
         //  If index % 2 == 0 I'm the left child
@@ -111,35 +104,32 @@ impl MerkleTree {
         //  Add the node I need to my proof vector
         proof.push(new_leaves[sibling_index].clone());
         let updated_index = index / 2;
-        self.proof(updated_index, &parents, proof)
+        MerkleTree::proof(updated_index, &parents, proof)
     }
     pub fn leaf_exists(&mut self, node_to_check: String) -> Result<Vec<String>, InputError> {
         let mut sha3 = Sha3::keccak256();
         sha3.input(node_to_check.as_ref());
         let hash = sha3.result_str();
-        for (index, &ref hash_leaf) in self.leaves.iter().enumerate() {
-            if hash_leaf.to_string() == hash {
+        for (index, hash_leaf) in self.leaves.iter().enumerate() {
+            if *hash_leaf.to_string() == hash {
                 let proof = vec![hash];
-                return Ok(self.proof(index, &self.leaves, proof));
+                return Ok(MerkleTree::proof(index, &self.leaves, proof));
             }
         }
         Err(InputError::LeafNotFound)
     }
-    #[allow(unused)]
-    fn hash_chunks(chunk1: String, chunk2: String) -> String {
+    pub fn hash_chunks(chunk1: String, chunk2: String) -> String {
         let mut sha3 = Sha3::keccak256();
         sha3.input(chunk1.as_bytes());
         sha3.input(chunk2.as_bytes());
-        sha3.result_str().to_string()
+        sha3.result_str()
     }
-    #[allow(unused)]
-    fn hash_string(input: String) -> String {
+    pub fn hash_string(input: String) -> String {
         let mut sha3 = Sha3::keccak256();
         sha3.input(input.as_bytes());
-        sha3.result_str().to_string()
+        sha3.result_str()
     }
 }
-#[allow(unused)]
 pub fn verify_proof(mut proof: Vec<String>, root: &str, index: usize) -> bool {
     let mut element = proof.remove(0);
     let mut current_index = index;
@@ -150,13 +140,12 @@ pub fn verify_proof(mut proof: Vec<String>, root: &str, index: usize) -> bool {
         if current_index % 2 == 0 {
             sha3.input(element.as_ref());
             sha3.input(sibling.as_ref());
-            element = sha3.result_str();
             //  Im on the right
         } else {
             sha3.input(sibling.as_ref());
             sha3.input(element.as_ref());
-            element = sha3.result_str();
         }
+        element = sha3.result_str();
         current_index /= 2;
     }
     element == root
@@ -295,4 +284,3 @@ mod tests {
         assert!(verify_proof(proof.unwrap(), &root, 2));
     }
 }
-
